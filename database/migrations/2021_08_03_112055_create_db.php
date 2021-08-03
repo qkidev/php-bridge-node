@@ -15,7 +15,7 @@ class CreateDb extends Migration
     {
         Schema::create('chains', function (Blueprint $table) {
             $table->id();
-            $table->staing("name")->comment("主网名字");
+            $table->String("name")->comment("主网名字");
             $table->decimal("network_id",20,0,true)->comment("网络id");
             $table->decimal("gas_price",8,2,true)->comment("矿工费价格，单位gwei");
             $table->tinyInteger("status",false,true)->default(0)->comment("1启用");
@@ -25,7 +25,7 @@ class CreateDb extends Migration
 
         Schema::create('tokens', function (Blueprint $table) {
             $table->id();
-            $table->staing("name")->comment("主网名字");
+            $table->String("name")->comment("主网名字");
             $table->decimal("from_chain",20,0,true)->comment("网络id");
             $table->decimal("to_chain",20,0,true)->comment("网络id");
             $table->string("from_token",42)->comment("如果为空就是主网币");
@@ -38,11 +38,12 @@ class CreateDb extends Migration
 
         Schema::create('cross_chain_tx', function (Blueprint $table) {
             $table->id();
-            $table->staing("in_tx_hash",66)->comment("转入hash");
+            $table->String("in_tx_hash",66)->comment("转入hash");
             $table->decimal("from_chain",20,0,true)->comment("网络id");
-            $table->Integer("token_id",false,true)->comment("token id");
-            $table->staing("submit_tx_hash",66)->comment("本地节点提交hash，只提交");
-            $table->staing("out_tx_hash",66)->comment("转出hash，最后确认的一笔");
+            $table->String("from_token",42)->comment("token");
+            $table->String("to_token",42)->comment("token");
+            $table->String("submit_tx_hash",66)->default('')->comment("本地节点提交hash，只提交");
+            $table->String("out_tx_hash",66)->default('')->comment("转出hash，最后确认的一笔");
             $table->decimal("to_chain",20,0,true)->comment("网络id");
             $table->decimal("amount",65,0,true)->comment("最小跨链数量");
             $table->tinyInteger("status",false,true)->default(0)->comment("1处理中 2处理完成");
@@ -57,6 +58,8 @@ class CreateDb extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('db');
+        Schema::dropIfExists('chains');
+        Schema::dropIfExists('cross_chain_tx');
+        Schema::dropIfExists('tokens');
     }
 }

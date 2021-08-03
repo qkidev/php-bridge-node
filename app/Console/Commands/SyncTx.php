@@ -40,6 +40,8 @@ class SyncTx extends Command
     {
         $SyncTxService = new SyncTxService("qki");
         $SyncTxService->Sync();
+        $SyncTxService->setChain("heco");
+        $SyncTxService->Sync();
         return 0;
     }
 }
