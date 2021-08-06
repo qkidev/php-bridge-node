@@ -57,7 +57,24 @@ class SyncTxService
         $url = "{$this->host[$this->chain]}?module=logs&action=getLogs&fromBlock=0&toBlock=latest&address={$this->Bridges[$this->chain]}&topic0=0x7189490b11cdaec9f21762aedf4a502b07ca019f0f6da42c6da64a60e4377f91";
         $data = file_get_contents($url);
         $logs = json_decode($data, true);
+        $RpcService = new RpcService();
         foreach ($logs['result'] as $log){
+
+            //读取节点rpc，验证数据
+            $tx_receipt = $RpcService->getTransactionReceipt($log['transactionHash'],$this->chain);
+            $tx_log_data = "";
+            foreach ($tx_receipt['result']['logs'] as $tx_log){
+                if($tx_log['address'] == strtolower($this->Bridges[$this->chain])
+                    && $tx_log['topics'][0] == "0x7189490b11cdaec9f21762aedf4a502b07ca019f0f6da42c6da64a60e4377f91"
+                ){
+                    $tx_log_data = $tx_log['data'];
+                }
+            }
+            if($log['data'] != $tx_log_data){
+                echo "日志不匹配\n";
+                echo $this->chain . ":" . $log['transactionHash'] . "\n";
+                continue;
+            }
 
             $event = $this->decodeLog($this->eventTypes[$log['topics'][0]],$log['data']);
             if(CrossChainTx::where("in_tx_hash",$log['transactionHash'])->exists())
